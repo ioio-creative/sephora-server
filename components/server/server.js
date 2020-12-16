@@ -1,25 +1,27 @@
-// const http = require('http');
-const http = require('https');
+const http = require('http');
+// const http = require('https');
 const fs = require('fs-extra');
 const path = require('path');
 const event = require('../eventemitter/eventemitter');
-const fileExtension = require('../fileExtension/fileExtension');
+const fileExtension = require('../fileExtension/fileExtension').ext;
 
 let basePath = path.join(process.cwd(), 'webroot');
 
-let port = 3003;
+let port = process.env.PORT || 3003;
 
 const setSettings = (newSettingsJSON) => {
-  port = newSettingsJSON['port'] || port;
+  port = process.env.PORT || newSettingsJSON['port'] || port;
   basePath = path.join(newSettingsJSON['basePath'], 'webroot');
+  console.log(basePath);
 }
 
 const startServer = () => {
   const httpServer = http.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Request-Method', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
-    res.setHeader('Access-Control-Allow-Headers',  req.headers.origin);
+    // res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+
   // const httpsOption = {
   //   key:  fs.readFileSync(path.join(process.cwd(), 'components', 'server', 'cert', '10.0.1.40.key')).toString(),
   //   cert: fs.readFileSync(path.join(process.cwd(), 'components', 'server', 'cert', '10.0.1.40.cert')).toString()
@@ -31,7 +33,7 @@ const startServer = () => {
     filePath = path.join(basePath, req.url);
     if (fs.existsSync(filePath)) {
       const contentType = fileExtension.getContentTypeOfPath(filePath);
-      res.statusCode = 200;
+    res.statusCode = 200;
       res.setHeader("Content-Type", contentType);
       const stream = fs.createReadStream(filePath);
       stream.pipe(res);

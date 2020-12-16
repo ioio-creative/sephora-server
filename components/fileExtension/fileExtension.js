@@ -170,7 +170,7 @@ exports.ext = (() => {
 	};
   const getExt = (path) => {
     const i = path.lastIndexOf('.');
-    return (i < 0) ? '' : path.substr(i);
+    return (i < 0) ? '' : path.substr(i + 1);
   };
   const getContentType = (ext) => {
     return extTypes[ext.toLowerCase()] || 'application/octet-stream';

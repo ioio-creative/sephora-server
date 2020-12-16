@@ -15,7 +15,7 @@ console.log(basePath);
 fs.ensureDirSync(basePath);
 let settingsJSON = {
   basePath: basePath,
-  port: 3003,
+  port: 3005,
 };
 const settingsPath = path.join(basePath, 'settings.json');
 const newSettingsJSON = fs.readJsonSync(settingsPath, { encoding: 'utf-8', throws: false });
