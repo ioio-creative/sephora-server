@@ -10,20 +10,20 @@ require('./components/roomManager/roomManager');
 
 const basePath = process.cwd();
 
-console.log(basePath);
+// console.log(basePath);
 
-fs.ensureDirSync(basePath);
+// fs.ensureDirSync(basePath);
 let settingsJSON = {
   basePath: basePath,
-  port: 3005,
+  port: process.env.PORT || 3005,
 };
-const settingsPath = path.join(basePath, 'settings.json');
-const newSettingsJSON = fs.readJsonSync(settingsPath, { encoding: 'utf-8', throws: false });
-settingsJSON = {
-  ...settingsJSON,
-  ...newSettingsJSON
-};
-fs.writeJSONSync(settingsPath, settingsJSON, { spaces: '  ', encoding: 'utf-8' });
+// const settingsPath = path.join(basePath, 'settings.json');
+// const newSettingsJSON = fs.readJsonSync(settingsPath, { encoding: 'utf-8', throws: false });
+// settingsJSON = {
+//   ...settingsJSON,
+//   ...newSettingsJSON
+// };
+// fs.writeJSONSync(settingsPath, settingsJSON, { spaces: '  ', encoding: 'utf-8' });
 
 
 event.emit('setSettings', settingsJSON);
