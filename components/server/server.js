@@ -5,13 +5,13 @@ const path = require('path');
 const event = require('../eventemitter/eventemitter');
 const fileExtension = require('../fileExtension/fileExtension');
 
-let basePath = path.join(process.cwd(), 'server');
+let basePath = path.join(process.cwd(), 'webroot');
 
 let port = 3003;
 
 const setSettings = (newSettingsJSON) => {
   port = newSettingsJSON['port'] || port;
-  basePath = path.join(newSettingsJSON['basePath'], 'server');
+  basePath = path.join(newSettingsJSON['basePath'], 'webroot');
 }
 
 const startServer = () => {
