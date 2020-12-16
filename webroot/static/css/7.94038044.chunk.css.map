@@ -1,0 +1,1 @@
+{"version":3,"sources":["webpack://src/pages/admin.css"],"names":[],"mappings":"AAAA,WACE,iBAAkB,CAClB,UAAW,CACX,WAAY,CAEZ,SAAU,CACV,eACF","file":"7.94038044.chunk.css","sourcesContent":["#adminPage {\r\n  position: relative;\r\n  width: 100%;\r\n  height: 100%;\r\n  /* background-color: #ccc; */\r\n  z-index: 1;\r\n  font-size: 18rem;\r\n}"]}

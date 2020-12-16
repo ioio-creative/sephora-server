@@ -20,17 +20,18 @@ class RoomManager {
         // leave room before create/join room
         
         if (!options || options.roomId === undefined || this.roomsList[options.roomId] === undefined) {
-          const newRoom = this.createRoom(options.roomId);
+          const newRoom = this.createRoom();
           newRoom.addHost(socket, ack);
         } else {
           this.roomsList[options.roomId].addHost(socket, ack);
         }
       });
       socket.on('joinRoom', (options, ack) => {
-          log(`joinRoom - ${JSON.stringify(options, null, '  ')}`);
-          if (this.playersList[options['playerId']] !== undefined) {
+        log(`joinRoom - ${JSON.stringify(options, null, '  ')}`);
+        if (options['playerId'] && this.playersList[options['playerId']] !== undefined) {
           this.playersList[options['playerId']].addPlayer(options['playerId'], socket, ack);
         } else {
+          // console.log(JSON.stringify(Object.keys(this.playersList), null, '  '));
           log(`room not found - ${socket.id}`);
           if (typeof(ack) === "function") {
             ack({

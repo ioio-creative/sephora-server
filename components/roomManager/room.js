@@ -6,29 +6,29 @@ const { v1: uuid } = require('uuid');
 const log = console.log;
 
 const gameStatus = {
-  idle:      0,
-  waiting:   1,
-  selecting: 2,
-  selected:  3,
-  ready1:    4,
-  started1:  5,
-  result1:   6,
-  ready2:    7,
-  started2:  8,
-  result2:   9,
-  offline:   10, // should be not able to get this signal
+  Idle:          0,
+  WaitForPlayer: 1,
+  ModePick:      2,
+  ModeResult:    4,
+  GameOneReady:  5,
+  GameOnePlay:   6,
+  GameOneResult: 7,
+  GameTwoReady:  8,
+  GameTwoPlay:   9,
+  GameTwoResult: 10,
+  offline:       11, // should be not able to get this signal
 };
 const stageTimer = {
-  [gameStatus.idle]:      -1,
-  [gameStatus.waiting]:   -1,
-  [gameStatus.selecting]: -1,
-  [gameStatus.selected]:  -1,
-  [gameStatus.ready1]:    -1,
-  [gameStatus.started1]:  -1,
-  [gameStatus.result1]:   -1,
-  [gameStatus.ready2]:    -1,
-  [gameStatus.started2]:  -1,
-  [gameStatus.result2]:   -1,
+  [gameStatus.Idle]:      -1,
+  [gameStatus.WaitForPlayer]:   -1,
+  [gameStatus.ModePick]: -1,
+  [gameStatus.ModeResult]:  -1,
+  [gameStatus.GameOneReady]:    -1,
+  [gameStatus.GameOnePlay]:  -1,
+  [gameStatus.GameOneResult]:   -1,
+  [gameStatus.GameTwoReady]:    -1,
+  [gameStatus.GameTwoPlay]:  -1,
+  [gameStatus.GameTwoResult]:   -1,
   [gameStatus.offline]:   -1,
 };
 const gameTypeArray = [
@@ -79,12 +79,12 @@ class Room {
   // }
   initialRoom() {
     this.generateAllPlayersId();
-    this.updateGameStage(gameStatus.idle);
+    this.updateGameStage(gameStatus['Idle']);
   }
 
   updateGameStage(newStage) {
     if (newStage === this.roomStatus) {
-      this.emit('OnPlayersUpdate', this.playersStatus);
+      this.emit('OnPlayerUpdate', this.playersStatus);
       this.emit('gameStage', this.roomStatus, {
         playersInfo: this.playersStatus
       });
@@ -94,47 +94,41 @@ class Room {
     this.roomStatus = newStage;
     const additionalParams = [];
     switch (newStage) {
-      case gameStatus['idle']:
+      case gameStatus['Idle']:
         log(`game idle`);
         this.clearAllTimeout();
-        if (prevStage !== gameStatus['waiting']) {
+        if (prevStage !== gameStatus['WaitForPlayer']) {
           this.generateAllPlayersId();
           this.gameChoices = new Array(this.playersCount).fill(-1);
         }
         additionalParams.push({
           playersInfo: this.playersStatus
         });
-        this.emit('OnPlayersUpdate', this.playersStatus, {
-          accumulatedDistance: this.accumulatedDistance,
-          totalVisit: this.totalVisit,
-        });
+        this.emit('OnPlayerUpdate', this.playersStatus);
         break;
-      case gameStatus['waiting']:
+      case gameStatus['WaitForPlayer']:
         log(`game waiting`);
         this.clearAllTimeout();
         additionalParams.push({
           playersInfo: this.playersStatus
         });
-        this.emit('OnPlayersUpdate', this.playersStatus, {
-          accumulatedDistance: this.accumulatedDistance,
-          totalVisit: this.totalVisit,
-        });
+        this.emit('OnPlayerUpdate', this.playersStatus);
         if (stageTimer[newStage] > 0) {
           this.stageTimer = setTimeout(() => {
-            this.updateGameStage(gameStatus['selecting']);
+            this.updateGameStage(gameStatus['ModePick']);
           }, stageTimer[newStage] * 1000);
         }
         break;
-      case gameStatus['selecting']:
+      case gameStatus['ModePick']:
         log(`game selecting`);
         this.clearAllTimeout();
         if (stageTimer[newStage] > 0) {
           this.stageTimer = setTimeout(() => {
-            this.updateGameStage(gameStatus['selected']);
+            this.updateGameStage(gameStatus['ModeResult']);
           }, stageTimer[newStage] * 1000);
         }
         break;
-      case gameStatus['selected']:
+      case gameStatus['ModeResult']:
         log(`game selected`);
         // emit game selected
         this.clearAllTimeout();
@@ -157,112 +151,112 @@ class Room {
         additionalParams.push({
           gameSelected: this.gameId
         });
-        this.emit('ModePick', this.gameId);
+        this.emit('OnPlayerSelectMode', this.gameId);
         if (stageTimer[newStage] > 0) {
           this.stageTimer = setTimeout(() => {
-            this.updateGameStage(gameStatus['ready1']);
+            this.updateGameStage(gameStatus['GameOneReady']);
           }, stageTimer[newStage] * 1000);
         }
         break;
-      case gameStatus['ready1']:
+      case gameStatus['GameOneReady']:
         log(`game 1 ready`);
         this.clearAllTimeout();
         if (stageTimer[newStage] > 0) {
           this.stageTimer = setTimeout(() => {
-            this.updateGameStage(gameStatus['started1']);
+            this.updateGameStage(gameStatus['GameOnePlay']);
           }, stageTimer[newStage] * 1000);
         }
         break;
-      case gameStatus['started1']:
+      case gameStatus['GameOnePlay']:
         log(`game 1 started`);
         this.clearAllTimeout();
         if (stageTimer[newStage] > 0) {
           this.stageTimer = setTimeout(() => {
-            this.updateGameStage(gameStatus['result 1']);
+            this.updateGameStage(gameStatus['GameOneResult']);
           }, stageTimer[newStage] * 1000);
         }
         break;
-      case gameStatus['result1']: {
+      case gameStatus['GameOneResult']: {
         log(`game 1 result`);
         // emit game result
         // const distanceShaked = this.shakeArray.reduce((prev, curr) => prev + curr, 0) * this.distanceMultiplier;
-        let playerJoined = 0;
-        this.players.forEach((player, idx) => {
-          if (player['joined']) {
-            playerJoined++;
-            player['socket'].emit('game1Result', {
-              // data: distanceShaked// this.shakeArray[idx] * this.distanceMultiplier
-            });
-          }
-        });
-        // this.hosts.forEach((hostSocket) => {
-        //   hostSocket.emit('game1Result', distanceShaked);
+        // let playerJoined = 0;
+        // this.players.forEach((player, idx) => {
+        //   if (player['joined']) {
+        //     playerJoined++;
+        //     player['socket'].emit('game1Result', {
+        //       // data: distanceShaked// this.shakeArray[idx] * this.distanceMultiplier
+        //     });
+        //   }
         // });
-        this.debugs.forEach((debugSocket) => {
-          debugSocket.emit('game1Result', distanceShaked);
-        });
-        additionalParams.push({
-          gameResult: distanceShaked
-        });
+        // this.hosts.forEach((hostSocket) => {
+        //   hostSocket.emit('OnPlayerSelectMode', distanceShaked);
+        // });
+        // this.debugs.forEach((debugSocket) => {
+        //   debugSocket.emit('game1Result', distanceShaked);
+        // });
+        // additionalParams.push({
+        //   gameResult: distanceShaked
+        // });
         this.clearAllTimeout();
         if (stageTimer[newStage] > 0) {
           this.stageTimer = setTimeout(() => {
-            this.updateGameStage(gameStatus['ready2']);
+            this.updateGameStage(gameStatus['GameTwoReady']);
           }, stageTimer[newStage] * 1000);
         }
         break;
       }
-      case gameStatus['ready2']:
+      case gameStatus['GameTwoReady']:
         log(`game 1 ready`);
         this.clearAllTimeout();
         if (stageTimer[newStage] > 0) {
           this.stageTimer = setTimeout(() => {
-            this.updateGameStage(gameStatus['started2']);
+            this.updateGameStage(gameStatus['GameOneReady']);
           }, stageTimer[newStage] * 1000);
         }
         break;
-      case gameStatus['started2']:
+      case gameStatus['GameOneReady']:
         log(`game 2 started`);
         this.clearAllTimeout();
         if (stageTimer[newStage] > 0) {
           this.stageTimer = setTimeout(() => {
-            this.updateGameStage(gameStatus['result2']);
+            this.updateGameStage(gameStatus['GameTwoResult']);
           }, stageTimer[newStage] * 1000);
         }
         break;
-      case gameStatus['result2']: {
+      case gameStatus['GameTwoResult']: {
         log(`game 2 result`);
         // emit game result
-        // const distanceShaked = this.shakeArray.reduce((prev, curr) => prev + curr, 0) * this.distanceMultiplier;
-        let playerJoined = 0;
-        this.players.forEach((player, idx) => {
-          if (player['joined']) {
-            playerJoined++;
-            player['socket'].emit('game2Result', {
-              data: distanceShaked// this.shakeArray[idx] * this.distanceMultiplier
-            });
-          }
-        });
-        this.hosts.forEach((hostSocket) => {
-          hostSocket.emit('game2Result', distanceShaked);
-        });
-        this.debugs.forEach((debugSocket) => {
-          debugSocket.emit('game2Result', distanceShaked);
-        });
-        additionalParams.push({
-          gameResult: distanceShaked
-        });
+        // const shakedCount = this.shakeArray.reduce((prev, curr) => prev + curr, 0);
+        // let playerJoined = 0;
+        // this.players.forEach((player, idx) => {
+        //   if (player['joined']) {
+        //     playerJoined++;
+        //     player['socket'].emit('game2Result', {
+        //       data: shakedCount// this.shakeArray[idx] * this.distanceMultiplier
+        //     });
+        //   }
+        // });
+        // this.hosts.forEach((hostSocket) => {
+        //   hostSocket.emit('game2Result', shakedCount);
+        // });
+        // this.debugs.forEach((debugSocket) => {
+        //   debugSocket.emit('game2Result', distanceShaked);
+        // });
+        // additionalParams.push({
+        //   gameResult: distanceShaked
+        // });
         this.clearAllTimeout();
         if (stageTimer[newStage] > 0) {
           this.stageTimer = setTimeout(() => {
-            this.updateGameStage(gameStatus['idle']);
+            this.updateGameStage(gameStatus['Idle']);
           }, stageTimer[newStage] * 1000);
         }
         // save to db here
         // this.saveGameResult();
         // temp save to local variable
-        this.accumulatedDistance += distanceShaked;
-        this.totalVisit += playerJoined;
+        // this.accumulatedDistance += distanceShaked;
+        // this.totalVisit += playerJoined;
 
         break;
       }
@@ -307,15 +301,12 @@ class Room {
     };
     this.shakeArray[idx] = false;
     this.roomManager.addPlayer(this.players[idx].playerId, this);
-    this.emit('OnPlayersUpdate', this.playersStatus, {
-      accumulatedDistance: this.accumulatedDistance,
-      totalVisit: this.totalVisit,
-    });
+    this.emit('OnPlayerUpdate', this.playersStatus);
     const connectedPlayersCount = this.players.reduce((prev, curr) => {
       return prev + ~~curr['joined'];
     }, 0);
-    if (connectedPlayersCount === 0 && this.roomStatus === gameStatus.waiting) {
-      this.updateGameStage(gameStatus.idle);
+    if (connectedPlayersCount === 0 && this.roomStatus === gameStatus['WaitForPlayer']) {
+      this.updateGameStage(gameStatus['Idle']);
     }
   }
   // kick the player in specifice idx
@@ -345,7 +336,7 @@ class Room {
         }
       });
     }
-    hostSocket.emit('OnPlayersUpdate', {
+    hostSocket.emit('OnPlayerUpdate', {
       data: this.playersStatus,
       // accumulatedDistance: this.accumulatedDistance,
       // totalVisit: this.totalVisit,
@@ -366,7 +357,7 @@ class Room {
         data: this.roomId
       });
     }
-    debugSocket.emit('OnPlayersUpdate', {
+    debugSocket.emit('OnPlayerUpdate', {
       data: this.playersStatus
     });
     debugSocket.emit('gameStage', {
@@ -377,7 +368,7 @@ class Room {
   }
 
   addPlayer(playerId, playerSocket, ack) {
-    if (this.roomStatus === gameStatus.idle || this.roomStatus === gameStatus.waiting) {
+    if (this.roomStatus === gameStatus['Idle'] || this.roomStatus === gameStatus['WaitForPlayer']) {
       const playerJoiningIndex = this.players.findIndex(player => player.playerId === playerId);
       if (playerJoiningIndex !== -1) {
         const playerJoining = this.players[playerJoiningIndex];
@@ -394,8 +385,8 @@ class Room {
               index: playerJoiningIndex
             });
           }
-          // this.emit('OnPlayersUpdate', this.players);
-          setImmediate(()=>this.updateGameStage(gameStatus.waiting));
+          // this.emit('OnPlayerUpdate', this.players);
+          setImmediate(()=>this.updateGameStage(gameStatus['WaitForPlayer']));
         } else {
           if (typeof(ack) === "function") {
             ack({
@@ -492,8 +483,9 @@ class Room {
     // nothing to do if the timer handled in server
 
     // change stage if the timer handled by frontend
-    socket.on('changeStage', (data) => {
-      const newStage = gameStatus[data['data']];
+    socket.on('OnStatusEnter', (data) => {
+      // console.log(data);
+      const newStage = gameStatus[data['status']];
       log(`changeStage: ${newStage}`);
       if (stageTimer[newStage] !== undefined) {
         log("change to new stage");
@@ -503,7 +495,7 @@ class Room {
       }
     });
     // submit score event
-    socket.on('submitScore', (data) => {
+    socket.on('OnSubmitScore', (data) => {
       const scoreArray = data['data'];
       // expect scoreArray format
       // array of the five players shake count
@@ -527,23 +519,24 @@ class Room {
       this.generatePlayer(playerIdx);
     });
     socket.on('shake', () => {
-      if (this.roomStatus === gameStatus.started || this.roomStatus === gameStatus.ready) {
-        if (this.roomStatus === gameStatus.started) {
+      if (this.roomStatus === gameStatus['GameOneReady'] || this.roomStatus === gameStatus['GameOnePlay'] ||
+        this.roomStatus === gameStatus['GameTwoReady'] || this.roomStatus === gameStatus['GameTwoPlay']) {
+        if (this.roomStatus === gameStatus['GameTwoPlay']) {
           this.shakeArray[playerIdx] += 1;
         }
         const shakeMessage = new Array(this.playersCount).fill(0);
         shakeMessage[playerIdx] = 1
-        this.emit('playersShake', shakeMessage);
+        this.emit('OnPlayerShake', playerIdx);
       }
     });
     socket.on('selectGame', (data, ack) => {
       const gameId = data["data"];
-      if (this.roomStatus === gameStatus.selecting) {
+      if (this.roomStatus === gameStatus['ModePick']) {
         this.gameChoices[playerIdx] = gameId;
         this.emit('gameChoices', this.gameChoices);
-        ack({
-          data: gameId
-        });
+        // ack({
+        //   data: gameId
+        // });
 
         // check if all selected
         const totalPlayers = this.playersStatus.reduce((total, player) => {
@@ -558,84 +551,84 @@ class Room {
         // log("totalPlayers: ", totalPlayers);
         // log("totalSelected: ", totalSelected);
         if (totalPlayers === totalSelected) {
-          this.updateGameStage(gameStatus.selected);
+          this.updateGameStage(gameStatus['ModeResult']);
         }
       }
     });
   }
 
   bindSocketEventForDebug(socket) {
-    socket.on('debug', (data) => {
-      switch (data['type']) {
-        case 'gameStage':
-          const newStage = parseInt(data['data']);
-          if (stageTimer[newStage] !== undefined) {
-            this.updateGameStage(newStage);
-          }
-          break;
-        case 'joinGame': {
-          const playerIdx = this.players.findIndex((player) => (player.playerId === data['data']['playerId']));
-          if (playerIdx >= 0) {
-            this.players[playerIdx]['joined'] = true;
-            this.players[playerIdx]['socket'] = socket;
-            this.updateGameStage(gameStatus['waiting']);
-            // this.emit('OnPlayersUpdate', this.players);
-          }
-          break;
-        }
-        case 'kickPlayer': {
-          const playerIdx = this.players.findIndex((player) => (player.playerId === data['data']['playerId']));
-          if (playerIdx >= 0) {
-            this.generatePlayer(playerIdx);
-          }
-          break;
-        }
-        case 'selectGame': {
-          if (this.roomStatus === gameStatus.selecting) {
-            data['data']['selectedArray'].forEach((newChoice, idx) => {
-              if (newChoice !== this.gameChoices[idx]) {
-                this.gameChoices[idx] = newChoice;
-                if (this.players[idx]['socket']) {
-                  this.players[idx]['socket'].emit('gameChoice', newChoice);
-                }
-              }
-            })
-            // this.gameChoices = data['data']['selectedArray'];
-            this.emit('gameChoices', this.gameChoices);
-          }
-          break;
-        }
-        case 'shake': {
-          if (this.roomStatus === gameStatus.started) {
-            const playerIdx = this.players.findIndex((player) => (player.playerId === data['data']['playerId']));
-            this.shakeArray[playerIdx] += 1;
-            const shakeMessage = new Array(this.playersCount).fill(0);
-            shakeMessage[playerIdx] = 1
-            this.emit('playersShake', shakeMessage);
-          }
-          break;
-        }
-        // case 'setDistanceMultiplier': {
-        //   const newDistanceMultiplier = parseInt(data['data']);
-        //   if (!isNaN(newDistanceMultiplier)) {
-        //     this.distanceMultiplier = newDistanceMultiplier;
-        //   }
-        //   this.debugs.forEach(debugSocket => {
-        //     debugSocket.emit('updateDistanceMultiplier', this.distanceMultiplier);
-        //   })
-        //   break;
-        // }
-      }
-    })
-    socket.on('disconnect', () => {
-      const debugIdx = this.debugs.findIndex(debugSocket => debugSocket === socket);
-      if (debugIdx !== -1) {
-        this.debugs.splice(debugIdx, 1);
-      }
-      if (this.hosts.length + this.debugs.length === 0) {
-        this.roomManager.removeRoom(this.roomId);
-      }
-    });
+    // socket.on('debug', (data) => {
+    //   switch (data['type']) {
+    //     case 'gameStage':
+    //       const newStage = parseInt(data['data']);
+    //       if (stageTimer[newStage] !== undefined) {
+    //         this.updateGameStage(newStage);
+    //       }
+    //       break;
+    //     case 'joinGame': {
+    //       const playerIdx = this.players.findIndex((player) => (player.playerId === data['data']['playerId']));
+    //       if (playerIdx >= 0) {
+    //         this.players[playerIdx]['joined'] = true;
+    //         this.players[playerIdx]['socket'] = socket;
+    //         this.updateGameStage(gameStatus['WaitingForPlayer']);
+    //         // this.emit('OnPlayerUpdate', this.players);
+    //       }
+    //       break;
+    //     }
+    //     case 'kickPlayer': {
+    //       const playerIdx = this.players.findIndex((player) => (player.playerId === data['data']['playerId']));
+    //       if (playerIdx >= 0) {
+    //         this.generatePlayer(playerIdx);
+    //       }
+    //       break;
+    //     }
+    //     case 'selectGame': {
+    //       if (this.roomStatus === gameStatus.selecting) {
+    //         data['data']['selectedArray'].forEach((newChoice, idx) => {
+    //           if (newChoice !== this.gameChoices[idx]) {
+    //             this.gameChoices[idx] = newChoice;
+    //             if (this.players[idx]['socket']) {
+    //               this.players[idx]['socket'].emit('gameChoice', newChoice);
+    //             }
+    //           }
+    //         })
+    //         // this.gameChoices = data['data']['selectedArray'];
+    //         this.emit('gameChoices', this.gameChoices);
+    //       }
+    //       break;
+    //     }
+    //     case 'shake': {
+    //       if (this.roomStatus === gameStatus.started) {
+    //         const playerIdx = this.players.findIndex((player) => (player.playerId === data['data']['playerId']));
+    //         this.shakeArray[playerIdx] += 1;
+    //         const shakeMessage = new Array(this.playersCount).fill(0);
+    //         shakeMessage[playerIdx] = 1
+    //         this.emit('playersShake', shakeMessage);
+    //       }
+    //       break;
+    //     }
+    //     // case 'setDistanceMultiplier': {
+    //     //   const newDistanceMultiplier = parseInt(data['data']);
+    //     //   if (!isNaN(newDistanceMultiplier)) {
+    //     //     this.distanceMultiplier = newDistanceMultiplier;
+    //     //   }
+    //     //   this.debugs.forEach(debugSocket => {
+    //     //     debugSocket.emit('updateDistanceMultiplier', this.distanceMultiplier);
+    //     //   })
+    //     //   break;
+    //     // }
+    //   }
+    // })
+    // socket.on('disconnect', () => {
+    //   const debugIdx = this.debugs.findIndex(debugSocket => debugSocket === socket);
+    //   if (debugIdx !== -1) {
+    //     this.debugs.splice(debugIdx, 1);
+    //   }
+    //   if (this.hosts.length + this.debugs.length === 0) {
+    //     this.roomManager.removeRoom(this.roomId);
+    //   }
+    // });
   }
   // unbindSocketEventForPlayer(playerIdx) {
   //   const socket = this.players[playerIdx]['socket'];
