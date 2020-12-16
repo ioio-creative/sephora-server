@@ -16,6 +16,10 @@ const setSettings = (newSettingsJSON) => {
 
 const startServer = () => {
   const httpServer = http.createServer((req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Request-Method', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
+    res.setHeader('Access-Control-Allow-Headers',  req.headers.origin);
   // const httpsOption = {
   //   key:  fs.readFileSync(path.join(process.cwd(), 'components', 'server', 'cert', '10.0.1.40.key')).toString(),
   //   cert: fs.readFileSync(path.join(process.cwd(), 'components', 'server', 'cert', '10.0.1.40.cert')).toString()
