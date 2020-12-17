@@ -15,7 +15,7 @@ const basePath = process.cwd();
 // fs.ensureDirSync(basePath);
 let settingsJSON = {
   basePath: basePath,
-  port: process.env.PORT || 3003,
+  port: process.env.PORT || 3000,
 };
 // const settingsPath = path.join(basePath, 'settings.json');
 // const newSettingsJSON = fs.readJsonSync(settingsPath, { encoding: 'utf-8', throws: false });

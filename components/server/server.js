@@ -17,8 +17,8 @@ const setSettings = (newSettingsJSON) => {
 }
 
 // const httpsOption = {
-//   key:  fs.readFileSync(path.join(process.cwd(), 'components', 'server', 'cert', '10.0.1.40.key')).toString(),
-//   cert: fs.readFileSync(path.join(process.cwd(), 'components', 'server', 'cert', '10.0.1.40.cert')).toString()
+//   key:  fs.readFileSync(path.join(process.cwd(), 'components', 'server', 'cert', 'test2.key')).toString(),
+//   cert: fs.readFileSync(path.join(process.cwd(), 'components', 'server', 'cert', 'test.crt')).toString()
 // };
 const startServer = () => {
   const httpServer = http.createServer((req, res) => {
