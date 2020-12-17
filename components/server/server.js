@@ -1,5 +1,5 @@
-// const http = require('http');
-const http = require('https');
+const http = require('http');
+// const http = require('https');
 const fs = require('fs-extra');
 const path = require('path');
 const event = require('../eventemitter/eventemitter');
@@ -16,13 +16,13 @@ const setSettings = (newSettingsJSON) => {
   console.log(basePath);
 }
 
-const httpsOption = {
-  key:  fs.readFileSync(path.join(process.cwd(), 'components', 'server', 'cert', '10.0.1.40.key')).toString(),
-  cert: fs.readFileSync(path.join(process.cwd(), 'components', 'server', 'cert', '10.0.1.40.cert')).toString()
-};
+// const httpsOption = {
+//   key:  fs.readFileSync(path.join(process.cwd(), 'components', 'server', 'cert', '10.0.1.40.key')).toString(),
+//   cert: fs.readFileSync(path.join(process.cwd(), 'components', 'server', 'cert', '10.0.1.40.cert')).toString()
+// };
 const startServer = () => {
-  // const httpServer = http.createServer((req, res) => {
-  const httpServer = http.createServer(httpsOption, (req, res) => {
+  const httpServer = http.createServer((req, res) => {
+  // const httpServer = http.createServer(httpsOption, (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Request-Method', '*');
     res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
